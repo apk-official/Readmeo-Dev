@@ -1,13 +1,15 @@
+import os
 from functools import lru_cache
 
 from pydantic import PostgresDsn, computed_field
 from pydantic_core import MultiHostUrl
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+ENV = os.getenv("ENV", "dev")
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
-        env_file=".env",
+        env_file=f".env.{ENV}",
         env_file_encoding = "utf-8",
         case_sensitive = True,
         extra="ignore",
@@ -54,8 +56,8 @@ class Settings(BaseSettings):
 
     GITHUB_CLIENT_ID:str
     GITHUB_CLIENT_SECRET:str
-    GITHUB_CLIENT_URL:str
-    GITHUB_CLIENT_URL_WRITE:str
+    GITHUB_CALLBACK_URL:str
+    GITHUB_CALLBACK_URL_WRITE:str
 
     # -------- ANTHROPIC----------
 
