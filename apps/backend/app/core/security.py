@@ -43,7 +43,7 @@ def create_refresh_token(subject: str) -> tuple[str, str]:
 
 def decode_token(token: str, expected_type: str) -> dict[str, Any] | None:
     try:
-        payload:dict[str, Any] = jwt.decode(
+        payload: dict[str, Any] = jwt.decode(
             token,
             settings.SECRET_KEY,
             algorithms=[settings.ALGORITHM],

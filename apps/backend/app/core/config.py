@@ -38,14 +38,16 @@ class Settings(BaseSettings):
     @computed_field  # type:ignore[prop-decorator]
     @property
     def DATABASE_URL(self) -> str:
-        return str(MultiHostUrl.build(
-            scheme="postgresql+asyncpg",
-            username=self.POSTGRES_USER,
-            password=self.POSTGRES_PASSWORD,
-            host=self.POSTGRES_SERVER,
-            port=self.POSTGRES_PORT,
-            path=self.POSTGRES_DB,
-        ))
+        return str(
+            MultiHostUrl.build(
+                scheme="postgresql+asyncpg",
+                username=self.POSTGRES_USER,
+                password=self.POSTGRES_PASSWORD,
+                host=self.POSTGRES_SERVER,
+                port=self.POSTGRES_PORT,
+                path=self.POSTGRES_DB,
+            )
+        )
 
     # -------- Redis----------
 
