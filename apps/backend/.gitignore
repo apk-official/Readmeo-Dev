@@ -10,7 +10,7 @@ venv/
 .venv/
 env/
 ENV/
-!.env.test
+
 
 # ─── Environment / secrets ────────────────────────────────────
 # ─── Environment / secrets ────────────────────────────────────
@@ -21,6 +21,8 @@ ENV/
 .env.local
 .env.production
 *.env
+
+!.env.test
 
 # ─── Distribution / build ─────────────────────────────────────
 dist/
@@ -56,4 +58,4 @@ logs/
 
 # ─── Celery ───────────────────────────────────────────────────
 celerybeat-schedule
-celerybeat.pid
+celerybeat.pid!.env.test
