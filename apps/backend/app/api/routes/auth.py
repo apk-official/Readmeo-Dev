@@ -42,6 +42,7 @@ def _set_refresh_cookie(response: Response, token: str) -> None:
 
 # ─── Step 1: start login ──────────────────────────────────────
 
+
 @router.get("/login")
 async def login(redis: RedisDep) -> RedirectResponse:
     """Generate state, stash it in Redis, redirect the browser to GitHub."""
@@ -52,6 +53,7 @@ async def login(redis: RedisDep) -> RedirectResponse:
 
 
 # ─── Step 3-7: handle GitHub's callback ───────────────────────
+
 
 @router.get("/callback")
 async def callback(
@@ -105,6 +107,7 @@ async def callback(
 
 # ─── Refresh: rotate tokens ───────────────────────────────────
 
+
 @router.post("/refresh", response_model=TokenResponse)
 async def refresh(
     request: Request,
@@ -150,6 +153,7 @@ async def refresh(
 
 # ─── Logout ───────────────────────────────────────────────────
 
+
 @router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
 async def logout(
     request: Request,
@@ -166,6 +170,7 @@ async def logout(
 
 
 # ─── Current user ─────────────────────────────────────────────
+
 
 @router.get("/me", response_model=UserPublic)
 async def me(user: CurrentUser) -> UserPublic:

@@ -1,0 +1,30 @@
+# Backend tooling config. Keeps pytest, coverage, and ruff settings in one
+# place so CI and local runs behave identically.
+
+[tool.pytest.ini_options]
+# pytest-asyncio in auto mode so you don't decorate every async test.
+asyncio_mode = "auto"
+testpaths = ["tests"]
+# -ra shows a summary of skips/failures; --strict-markers catches typos in
+# @pytest.mark names.
+addopts = "-ra --strict-markers"
+
+[tool.coverage.run]
+source = ["app"]
+# Don't count auto-generated migrations or the test files themselves.
+omit = ["alembic/*", "tests/*"]
+
+[tool.coverage.report]
+show_missing = true
+# No fail_under yet — coverage is reported, not enforced. Add e.g.
+# fail_under = 70 here later to turn it into a hard gate.
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+extend-exclude = ["alembic/versions"]
+
+[tool.ruff.lint]
+# A sensible starter set: pyflakes (F), pycodestyle (E/W), isort (I),
+# bugbear (B), and pyupgrade (UP). Expand as you like.
+select = ["E", "W", "F", "I", "B", "UP"]

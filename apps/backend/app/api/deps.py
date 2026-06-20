@@ -8,33 +8,35 @@ from app.core.security import decode_token
 from app.db.session import get_db
 from app.models.user import User
 
-_bearer = HTTPBearer(auto_error = False)
+_bearer = HTTPBearer(auto_error=False)
 
 _credentials_exception = HTTPException(
     status_code=status.HTTP_401_UNAUTHORIZED,
     detail="Could not validate credentials",
-    headers={"WWW-Authenticate":"Bearer"},
+    headers={"WWW-Authenticate": "Bearer"},
 )
 
+
 async def get_current_user(
-        credentials:Annotated[HTTPAuthorizationCredentials|None,Depends(_bearer)],db:Annotated[AsyncSession,Depends(get_db)],
-)->User:
+    credentials: Annotated[HTTPAuthorizationCredentials | None, Depends(_bearer)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> User:
     if credentials is None:
         raise _credentials_exception
-    
-    payload = decode_token(credentials.credentials,expected_type="access")
+
+    payload = decode_token(credentials.credentials, expected_type="access")
 
     if payload is None:
         raise _credentials_exception
-    
+
     user_id = payload.get("sub")
     if user_id is None:
         raise _credentials_exception
-    
+
     user = await db.get(User, int(user_id))
     if user is None:
         raise _credentials_exception
-    
+
     if not user.is_active:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
@@ -42,4 +44,5 @@ async def get_current_user(
         )
     return user
 
-CurrentUser = Annotated[User,Depends(get_current_user)]
+
+CurrentUser = Annotated[User, Depends(get_current_user)]

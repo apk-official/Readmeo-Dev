@@ -1,0 +1,114 @@
+name: CI / backend
+
+# Runs on pull requests into the test branch (the promotion gate) and on
+# pushes to dev (so you get feedback before opening the PR). Branch protection
+# on `test` should require the jobs below before a merge is allowed.
+on:
+  pull_request:
+    branches: [test]
+  push:
+    branches: [dev]
+
+# Cancel an in-progress run if you push again to the same branch/PR.
+# Saves runner minutes on the "fix a typo, push again" loop.
+concurrency:
+  group: ci-backend-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Gate 0: decide whether the backend even changed. If a PR only touches
+  # apps/frontend or worker, every job below is skipped. This is the single
+  # biggest lever for not running pytest on a frontend typo.
+  # ---------------------------------------------------------------------------
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      backend: ${{ steps.filter.outputs.backend }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            backend:
+              - 'apps/backend/**'
+              - '.github/workflows/ci-backend.yml'
+
+  # ---------------------------------------------------------------------------
+  # Gate 1 (FAST): lint + typecheck. Runs in ~30s, no services, no DB.
+  # A ruff or mypy failure dies here and never reaches the slow gate.
+  # ---------------------------------------------------------------------------
+  fast:
+    needs: changes
+    if: needs.changes.outputs.backend == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/backend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+          cache-dependency-path: apps/backend/requirements.txt
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install ruff mypy
+
+      - name: Ruff (lint)
+        run: ruff check .
+
+      - name: Ruff (format check)
+        run: ruff format --check .
+
+      - name: Mypy (typecheck)
+        run: mypy app
+
+  # ---------------------------------------------------------------------------
+  # Gate 2 (SLOW): tests. Only starts if the fast gate is green.
+  # Unit-only for now: no Postgres/Redis service. DB/Redis are mocked in tests.
+  # `--passed-no-tests`-equivalent: we tolerate an empty suite so the build
+  # is green before the first test file lands, then tightens automatically
+  # once tests/ has content.
+  # ---------------------------------------------------------------------------
+  tests:
+    needs: [changes, fast]
+    if: needs.changes.outputs.backend == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/backend
+    env:
+      ENV: test
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+          cache-dependency-path: apps/backend/requirements.txt
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pytest-asyncio pytest-cov
+
+      - name: Pytest (unit, with coverage)
+        # --cov reports coverage but does NOT fail the build on a threshold yet
+        # (that's the "soft coverage" decision). Exit code 5 = "no tests
+        # collected"; we treat that as success until the suite exists.
+        run: |
+          pytest \
+            --cov=app --cov-report=term-missing \
+            tests/ || ([ $? -eq 5 ] && echo "No tests collected yet — passing." )
