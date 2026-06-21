@@ -11,17 +11,17 @@ venv/
 env/
 ENV/
 
-
 # ─── Environment / secrets ────────────────────────────────────
-# ─── Environment / secrets ────────────────────────────────────
-
+# Ignore every env file by default so a real secret can never be
+# committed by accident. The one exception is .env.test, un-ignored
+# below: it holds only fake values and CI needs it to run.
 .env
 .env.dev
-.env.test
 .env.local
 .env.production
 *.env
 
+# Allow the fake test env through (no real secrets live here).
 !.env.test
 
 # ─── Distribution / build ─────────────────────────────────────
@@ -58,4 +58,4 @@ logs/
 
 # ─── Celery ───────────────────────────────────────────────────
 celerybeat-schedule
-celerybeat.pid!.env.test
+celerybeat.pid

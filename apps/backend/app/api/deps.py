@@ -38,11 +38,14 @@ async def get_current_user(
         raise _credentials_exception
 
     if not user.is_active:
+        # Token is valid and the user exists, but a disabled account shouldn't get
+        # through. Distinct 403 here since the credentials themselves were fine.
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="User account is disabled",
         )
     return user
 
-
+# Shorthand so routes write `user: CurrentUser` instead of repeating the full
+# Depends(get_current_user) annotation everywhere.
 CurrentUser = Annotated[User, Depends(get_current_user)]

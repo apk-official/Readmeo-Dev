@@ -1,3 +1,10 @@
+"""Application settings, loaded once from the environment.
+Everything configurable lives here as a single Settings object. The active
+.env file is chosen by the ENV variable (.env.dev locally, .env.test under
+pytest, platform-injected vars in prod), so the same code reads the right
+values everywhere without us touching it.
+"""
+
 import os
 from functools import lru_cache
 
@@ -38,6 +45,9 @@ class Settings(BaseSettings):
     @computed_field  # type:ignore[prop-decorator]
     @property
     def DATABASE_URL(self) -> str:
+        # Assemble the async connection string from the parts above so we
+        # never hand-write (and never typo) the DSN. asyncpg driver because
+        # the whole stack is async.
         return str(
             MultiHostUrl.build(
                 scheme="postgresql+asyncpg",
@@ -50,6 +60,8 @@ class Settings(BaseSettings):
         )
 
     # -------- Redis----------
+    # DB 0 for app state (OAuth state, refresh allowlist), 1 and 2 reserved
+    # for Celery so the queues never collide with our keys.
 
     REDIS_URL: str = "redis://localhost:6379/0"
     CELERY_BROKER_URL: str = "redis://localhost:6379/1"
@@ -60,6 +72,8 @@ class Settings(BaseSettings):
     GITHUB_CLIENT_ID: str
     GITHUB_CLIENT_SECRET: str
     GITHUB_CALLBACK_URL: str
+    # Second callback for when a user upgrades to write scope (auto-deploy).
+    # Kept separate so the read-only and write flows can't be confused.
     GITHUB_CALLBACK_URL_WRITE: str
 
     # -------- ANTHROPIC----------
@@ -80,6 +94,9 @@ class Settings(BaseSettings):
 
 @lru_cache
 def get_settings() -> Settings:
+    # lru_cache makes this a singleton: Settings is built once, on first call,
+    # then handed back from cache. Avoids re-reading the .env file on every
+    # import and gives every module the same instance.
     return Settings()
 
 
