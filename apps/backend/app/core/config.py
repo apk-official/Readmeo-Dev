@@ -86,6 +86,7 @@ class Settings(BaseSettings):
     CF_ACCOUNT_ID: str
     CF_ZONE_ID: str
     CF_BASE_DOMAIN: str
+    CF_KV_NAMESPACE_ID: str
 
     # -------- Encryption ----------
 

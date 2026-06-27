@@ -10,7 +10,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from prometheus_fastapi_instrumentator import Instrumentator
 
-from app.api.routes import auth, health
+from app.api.routes import auth, github, health, portfolio
 from app.core.config import settings
 from app.db.redis import redis_client
 from app.db.session import engine
@@ -53,3 +53,5 @@ Instrumentator(
 # Health routes stay unversioned; the auth router carries its own /auth prefix.
 app.include_router(health.router)
 app.include_router(auth.router)
+app.include_router(portfolio.router, prefix="/api/v1")
+app.include_router(github.router, prefix="/api/v1")
