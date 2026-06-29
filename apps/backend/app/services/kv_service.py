@@ -26,13 +26,20 @@ def _headers() -> dict:
     }
 
 
-async def put_artifact(subdomain: str, artifact_dict: dict) -> None:
-    """Write the artifact JSON to KV under the subdomain key."""
+async def put_artifact(
+    subdomain: str,
+    artifact_dict: dict,
+    *,
+    template_id: str,
+    scheme_id: str,
+) -> None:
+    """Write the artifact (plus template/scheme choice) to KV under the subdomain."""
+    payload = {**artifact_dict, "template_id": template_id, "scheme_id": scheme_id}
     async with httpx.AsyncClient() as client:
         res = await client.put(
             _kv_url(subdomain),
             headers=_headers(),
-            content=json.dumps(artifact_dict),
+            content=json.dumps(payload),
         )
         res.raise_for_status()
 

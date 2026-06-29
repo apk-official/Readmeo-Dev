@@ -17,8 +17,11 @@ from app.schema.portfolio import (
     DeployStatus,
     PortfolioCreate,
     PortfolioRead,
+    SchemeUpdate,
+    StyleUpdateResult,
     SubdomainRead,
     SubdomainUpdate,
+    TemplateUpdate,
 )
 from app.services import kv_service, portfolio_service
 
@@ -65,6 +68,7 @@ async def get_my_portfolio(
         )
     return portfolio
 
+
 @router.post("/me/deploy", response_model=DeployStatus)
 async def deploy_portfolio(
     user: CurrentUser,
@@ -73,10 +77,12 @@ async def deploy_portfolio(
     """Push the artifact to KV and mark the portfolio as live."""
     portfolio = await portfolio_service.get_portfolio_by_user(db, user.id)
     if portfolio is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No portfolio yet")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="No portfolio yet")
 
     try:
-        await kv_service.put_artifact(portfolio.subdomain, portfolio.artifact)
+        await kv_service.put_artifact(portfolio.subdomain, portfolio.artifact, template_id=portfolio.template_id,  # noqa: E501
+        scheme_id=portfolio.scheme_id)
     except Exception as e:
         portfolio.last_deploy_error = str(e)
         await db.commit()
@@ -96,6 +102,7 @@ async def deploy_portfolio(
         last_deploy_error=portfolio.last_deploy_error,
     )
 
+
 @router.delete("/me/deploy", response_model=DeployStatus)
 async def undeploy_portfolio(
     user: CurrentUser,
@@ -104,7 +111,8 @@ async def undeploy_portfolio(
     """Remove the artifact from KV and take the portfolio offline."""
     portfolio = await portfolio_service.get_portfolio_by_user(db, user.id)
     if portfolio is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No portfolio yet")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="No portfolio yet")
 
     try:
         await kv_service.delete_artifact(portfolio.subdomain)
@@ -122,6 +130,7 @@ async def undeploy_portfolio(
         last_deploy_error=portfolio.last_deploy_error,
     )
 
+
 @router.patch("/me/subdomain", response_model=SubdomainRead)
 async def change_subdomain(
     payload: SubdomainUpdate,
@@ -131,7 +140,8 @@ async def change_subdomain(
     """Change the subdomain. If live, migrates the KV key automatically."""
     portfolio = await portfolio_service.get_portfolio_by_user(db, user.id)
     if portfolio is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No portfolio yet")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="No portfolio yet")
 
     old_subdomain = portfolio.subdomain
 
@@ -154,6 +164,7 @@ async def change_subdomain(
     await db.refresh(portfolio)
     return SubdomainRead(subdomain=portfolio.subdomain)
 
+
 @router.delete("/me", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_portfolio(
     user: CurrentUser,
@@ -162,7 +173,8 @@ async def delete_portfolio(
     """Delete the portfolio. Auto-undeploys from KV if currently live."""
     portfolio = await portfolio_service.get_portfolio_by_user(db, user.id)
     if portfolio is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No portfolio yet")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="No portfolio yet")
 
     if portfolio.is_published:
         try:
@@ -172,3 +184,69 @@ async def delete_portfolio(
 
     await db.delete(portfolio)
     await db.commit()
+
+@router.patch("/me/template", response_model=StyleUpdateResult)
+async def change_template(
+    payload: TemplateUpdate,
+    user: CurrentUser,
+    db: Annotated[AsyncSession, Depends(get_db)],
+):
+    """Change the template. Re-pushes to KV if the portfolio is live."""
+    portfolio = await portfolio_service.get_portfolio_by_user(db, user.id)
+    if portfolio is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No portfolio yet")
+
+    portfolio.template_id = payload.template_id
+
+    if portfolio.is_published:
+        try:
+            await kv_service.put_artifact(
+                portfolio.subdomain,
+                portfolio.artifact,
+                template_id=portfolio.template_id,
+                scheme_id=portfolio.scheme_id,
+            )
+        except Exception as e:
+            portfolio.last_deploy_error = str(e)
+            await db.commit()
+            raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail="Template updated but redeploy failed")  # noqa: B904, E501
+    await db.commit()
+    return StyleUpdateResult(
+        template_id=portfolio.template_id,
+        scheme_id=portfolio.scheme_id,
+        is_published=portfolio.is_published,
+        last_deploy_error=portfolio.last_deploy_error,
+    )
+
+@router.patch("/me/scheme", response_model=StyleUpdateResult)
+async def change_scheme(
+    payload: SchemeUpdate,
+    user: CurrentUser,
+    db: Annotated[AsyncSession, Depends(get_db)],
+):
+    """Change the color/font scheme. Re-pushes to KV if the portfolio is live."""
+    portfolio = await portfolio_service.get_portfolio_by_user(db, user.id)
+    if portfolio is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No portfolio yet")
+
+    portfolio.scheme_id = payload.scheme_id
+
+    if portfolio.is_published:
+        try:
+            await kv_service.put_artifact(
+                portfolio.subdomain,
+                portfolio.artifact,
+                template_id=portfolio.template_id,
+                scheme_id=portfolio.scheme_id,
+            )
+        except Exception as e:
+            portfolio.last_deploy_error = str(e)
+            await db.commit()
+            raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail="Scheme updated but redeploy failed")  # noqa: B904, E501
+    await db.commit()
+    return StyleUpdateResult(
+        template_id=portfolio.template_id,
+        scheme_id=portfolio.scheme_id,
+        is_published=portfolio.is_published,
+        last_deploy_error=portfolio.last_deploy_error,
+    )

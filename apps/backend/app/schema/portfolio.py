@@ -15,6 +15,7 @@ class PortfolioCreate(BaseModel):
     # What the form sends: a chosen subdomain + template, plus the built artifact.
     subdomain: str
     template_id: str
+    schema_id:str
     artifact: Artifact
 
 
@@ -47,3 +48,14 @@ class DeployStatus(BaseModel):
 class SubdomainRead(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     subdomain: str
+
+class TemplateUpdate(BaseModel):
+    template_id: str
+
+class SchemeUpdate(BaseModel):
+    scheme_id: str
+class StyleUpdateResult(BaseModel):
+    template_id: str
+    scheme_id: str
+    is_published: bool
+    last_deploy_error: str | None

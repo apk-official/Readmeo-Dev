@@ -29,6 +29,7 @@ class Portfolio(Base):
     subdomain: Mapped[str] = mapped_column(String(63), unique=True, index=True)
 
     template_id: Mapped[str] = mapped_column(String(64), index=True)
+    scheme_id: Mapped[str] = mapped_column(String(64), default="dark")
 
     # Mirrors the artifact's own version, so we can find stale rows with a plain WHERE.
     schema_version: Mapped[int] = mapped_column(Integer, default=1)

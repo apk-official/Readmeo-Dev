@@ -1,0 +1,22 @@
+name = "gitbunny-worker"
+main = "src/index.js"
+compatibility_date = "2026-01-01"
+
+# Default (used by `wrangler dev` for local testing)
+[[kv_namespaces]]
+binding = "PORTFOLIO_KV"
+id = "eddd2b0aa0bf4d1491c51f7f80a20101"   # GITBUNNY_DEV full id
+
+#Test environment: wrangler deploy --env test
+[env.test]
+name = "gitbunny-worker-test"
+[[env.test.kv_namespaces]]
+binding = "PORTFOLIO_KV"
+id = "31336712ed47446eaa92a2099e51da45"   # GITBUNNY_TEST full id
+
+#Prod environment: wrangler deploy --env prod
+[env.prod]
+name = "gitbunny-worker-prod"
+[[env.prod.kv_namespaces]]
+binding = "PORTFOLIO_KV"
+id = "f812a2bbfe0d48ed9f7f15e43042ab07"   # GITBUNNY_PROD full id
