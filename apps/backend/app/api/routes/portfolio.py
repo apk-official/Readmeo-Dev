@@ -42,6 +42,7 @@ async def upsert_my_portfolio(
             user_id=user.id,
             subdomain=payload.subdomain,
             template_id=payload.template_id,
+            scheme_id=payload.scheme_id,
             artifact=payload.artifact,
         )
         await db.commit()

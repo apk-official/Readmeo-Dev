@@ -6,6 +6,7 @@ The Worker reads this key to render the portfolio page.
 """
 
 import json
+from urllib.parse import quote
 
 import httpx
 
@@ -13,9 +14,11 @@ from app.core.config import settings
 
 
 def _kv_url(key: str) -> str:
+    # quote the key so it can't break out of the values/<key> path segment.
+    safe_key = quote(key, safe="")
     return (
         f"https://api.cloudflare.com/client/v4/accounts/{settings.CF_ACCOUNT_ID}"
-        f"/storage/kv/namespaces/{settings.CF_KV_NAMESPACE_ID}/values/{key}"
+        f"/storage/kv/namespaces/{settings.CF_KV_NAMESPACE_ID}/values/{safe_key}"
     )
 
 

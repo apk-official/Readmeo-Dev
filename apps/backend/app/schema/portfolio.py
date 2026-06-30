@@ -5,17 +5,29 @@ PortfolioCreate is what the form submits; PortfolioRead is what we return.
 """
 
 from datetime import datetime
+from typing import Annotated
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, StringConstraints
 
 from app.schema.artifact import Artifact
+
+# DNS label rules: lowercase alphanumeric and hyphens, no leading/trailing
+# hyphen, 1-63 chars. Constrained here so an unvalidated subdomain can never
+# reach the KV key path or the rendered README.
+Subdomain = Annotated[
+    str,
+    StringConstraints(
+        pattern=r"^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$",
+        to_lower=True,
+    ),
+]
 
 
 class PortfolioCreate(BaseModel):
     # What the form sends: a chosen subdomain + template, plus the built artifact.
-    subdomain: str
+    subdomain: Subdomain
     template_id: str
-    scheme_id:str
+    scheme_id: str
     artifact: Artifact
 
 
@@ -27,6 +39,7 @@ class PortfolioRead(BaseModel):
     id: int
     subdomain: str
     template_id: str
+    scheme_id: str
     schema_version: int
     artifact: Artifact
     is_published: bool
@@ -35,9 +48,8 @@ class PortfolioRead(BaseModel):
     updated_at: datetime
 
 
-
 class SubdomainUpdate(BaseModel):
-    subdomain: str
+    subdomain: Subdomain
 
 class DeployStatus(BaseModel):
     model_config = ConfigDict(from_attributes=True)

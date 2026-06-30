@@ -31,6 +31,7 @@ async def upsert_portfolio(
     user_id: int,
     subdomain: str,
     template_id: str,
+    scheme_id: str,
     artifact: Artifact,
 ) -> Portfolio:
     """Create or update the portfolio for a user.
@@ -46,6 +47,7 @@ async def upsert_portfolio(
             user_id=user_id,
             subdomain=subdomain,
             template_id=template_id,
+            scheme_id=scheme_id,
             schema_version=artifact.schema_version,
             artifact=artifact.model_dump(mode="json"),
         )
@@ -53,6 +55,7 @@ async def upsert_portfolio(
     else:
         portfolio.subdomain = subdomain
         portfolio.template_id = template_id
+        portfolio.scheme_id = scheme_id
         portfolio.schema_version = artifact.schema_version
         portfolio.artifact = artifact.model_dump(mode="json")
 

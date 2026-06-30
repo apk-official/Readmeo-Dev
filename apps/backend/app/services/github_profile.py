@@ -64,7 +64,7 @@ async def fetch_github_content(user: User) -> Content:
     if blog:
         if not blog.startswith(("http://", "https://")):
             blog = f"https://{blog}"
-    socials.append(Social(platform="website", url=blog))
+        socials.append(Social(platform="website", url=blog))
 
     if gh.get("twitter_username"):
         socials.append(Social(

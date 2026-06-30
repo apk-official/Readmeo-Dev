@@ -46,7 +46,7 @@ def create_refresh_token(subject: str) -> tuple[str, str]:
         "type": "refresh",
         "jti": jti,
         "iat": now,
-        "exp": now + timedelta(minutes=settings.REFRESH_TOKEN_EXPIRE_DAYS),
+        "exp": now + timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS),
     }
     token = jwt.encode(payload, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
 
@@ -62,6 +62,7 @@ def decode_token(token: str, expected_type: str) -> dict[str, Any] | None:
             token,
             settings.SECRET_KEY,
             algorithms=[settings.ALGORITHM],
+            options={"require": ["exp", "iat", "sub", "type"]},
         )
     except ExpiredSignatureError:
         return None
@@ -70,5 +71,8 @@ def decode_token(token: str, expected_type: str) -> dict[str, Any] | None:
     # A valid signature isn't enough: an access token must not be usable where
     # a refresh token is expected, and vice versa. Reject a type mismatch.
     if payload.get("type") != expected_type:
+        return None
+    # A refresh token must carry a jti so it can be revoked; reject if missing.
+    if expected_type == "refresh" and not payload.get("jti"):
         return None
     return payload

@@ -39,5 +39,5 @@ class User(Base):
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
     )
 
-    def __rep__(self) -> str:
+    def __repr__(self) -> str:
         return f"<User id={self.id} github_username={self.github_username!r}>"

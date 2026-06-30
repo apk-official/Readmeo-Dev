@@ -1,3 +1,4 @@
+import logging
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -7,6 +8,8 @@ from app.api.deps import CurrentUser
 from app.db.session import get_db
 from app.schema.artifact import Content
 from app.services.github_profile import fetch_github_content
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/github", tags=["github"])
 
@@ -25,10 +28,12 @@ async def get_github_user_data(
         content = await fetch_github_content(user)
     except ValueError as e:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,detail=str(e)) from e
+            status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)
+        ) from e
     except Exception as e:
-        import traceback
-        traceback.print_exc()
-        raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY,
-                            detail="Failed to fetch Github Profile") from e
+        logger.exception("Failed to fetch GitHub profile for user %s", user.id)
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail="Failed to fetch Github Profile",
+        ) from e
     return content
