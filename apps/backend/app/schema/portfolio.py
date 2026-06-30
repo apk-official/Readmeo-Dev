@@ -15,7 +15,7 @@ class PortfolioCreate(BaseModel):
     # What the form sends: a chosen subdomain + template, plus the built artifact.
     subdomain: str
     template_id: str
-    schema_id:str
+    scheme_id:str
     artifact: Artifact
 
 

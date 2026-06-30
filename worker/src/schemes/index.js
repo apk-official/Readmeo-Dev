@@ -1,5 +1,25 @@
 // Schemes: color + font sets. A scheme is combinable with any template.
 // Add a new scheme here and it works with every template automatically.
+export function cssVars(scheme) {
+  const c = scheme.colors;
+  const f = scheme.fonts;
+  return [
+    `--color-background: ${c.background}`,
+    `--color-surface: ${c.surface}`,
+    `--color-primary: ${c.primary}`,
+    `--color-accent: ${c.accent}`,
+    `--color-text: ${c.text_primary}`,
+    `--color-muted: ${c.text_muted}`,
+    `--color-border: ${c.border}`,
+    `--font-heading: "${f.heading}", system-ui, sans-serif`,
+    `--font-body: "${f.body}", system-ui, sans-serif`,
+    `--font-mono: "${f.mono}", monospace`,
+    `--font-base: 16px`,
+    `--space: 8px`,
+    `--radius: 8px`,
+    `--max-width: 680px`,
+  ].join("; ");
+}
 
 export const schemes = {
   dark: {

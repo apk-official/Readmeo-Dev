@@ -6,11 +6,9 @@ fonts) defined in the Worker. So the artifact is purely what the site says,
 never how it looks.
 """
 
-from pydantic import BaseModel, Field, HttpUrl
+from typing import Literal
 
-# ─── content sections ─────────────────────────────────────────
-# These map onto both the README cards and the HTML page sections:
-# heading, about, projects, stack, experience, contact, footer.
+from pydantic import BaseModel, Field, HttpUrl
 
 
 class Identity(BaseModel):
@@ -22,7 +20,10 @@ class Identity(BaseModel):
 class Project(BaseModel):
     title: str
     description: str = ""
-    url: HttpUrl | None = None
+    repo_url: HttpUrl | None = None
+    live_url: HttpUrl | None = None
+    # Which link the README card redirects to. The portfolio shows both.
+    primary_link: Literal["repo", "live"] = "repo"
     tags: list[str] = Field(default_factory=list)
 
 
@@ -39,8 +40,19 @@ class ExperienceItem(BaseModel):
 
 
 class Social(BaseModel):
+    # platform is free-form: "github", "kofi", "blog", anything.
     platform: str
     url: HttpUrl
+
+
+class SectionTitles(BaseModel):
+    # Display labels for the fixed V1 sections. Users can rename them
+    # ("About" -> "Who am I") without changing the structure.
+    about: str = "About"
+    projects: str = "Projects"
+    stack: str = "Stack"
+    experience: str = "Experience"
+    contact: str = "Contact"
 
 
 class Content(BaseModel):
@@ -51,9 +63,7 @@ class Content(BaseModel):
     experience: list[ExperienceItem] = Field(default_factory=list)
     socials: list[Social] = Field(default_factory=list)
     footer: str = ""
-
-
-# ─── the artifact itself ──────────────────────────────────────
+    section_titles: SectionTitles = Field(default_factory=SectionTitles)
 
 
 class Artifact(BaseModel):

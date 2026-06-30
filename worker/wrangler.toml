@@ -17,6 +17,9 @@ id = "31336712ed47446eaa92a2099e51da45"   # GITBUNNY_TEST full id
 #Prod environment: wrangler deploy --env prod
 [env.prod]
 name = "gitbunny-worker-prod"
+routes = [
+  { pattern = "*.gitbunny.dev/*", zone_name = "gitbunny.dev" }
+]
 [[env.prod.kv_namespaces]]
 binding = "PORTFOLIO_KV"
 id = "f812a2bbfe0d48ed9f7f15e43042ab07"   # GITBUNNY_PROD full id

@@ -6,6 +6,14 @@ import { esc, fontsHref } from "./_helpers.js";
 export function render(content, scheme) {
   const c = scheme.colors;
   const f = scheme.fonts;
+  const t = content.section_titles || {};
+  const title = {
+    about: t.about || "about",
+    projects: t.projects || "projects",
+    stack: t.stack || "stack",
+    experience: t.experience || "experience",
+    contact: t.contact || "contact",
+  };
 
   return `<!doctype html>
 <html lang="en">
@@ -48,6 +56,8 @@ export function render(content, scheme) {
   a:hover { text-decoration: underline; }
   p { color: ${c.text_muted}; }
   .project { margin-bottom: 16px; padding-left: 16px; border-left: 2px solid ${c.border}; }
+  .project-links { margin-top: 4px; }
+  .project-links a:not(:last-child)::after { content: "  ·  "; color: ${c.text_muted}; }
   .tags { margin-top: 6px; }
   .tag { color: ${c.text_muted}; } .tag::before { content: "#"; }
   .tag:not(:last-child)::after { content: " "; }
@@ -56,6 +66,12 @@ export function render(content, scheme) {
   .exp .meta { color: ${c.text_muted}; font-size: 12px; }
   .socials a:not(:last-child)::after { content: "  ·  "; color: ${c.text_muted}; }
   footer { margin-top: 28px; color: ${c.text_muted}; font-size: 12px; }
+  @media (max-width: 600px) {
+    body { padding: 20px 10px; font-size: 13px; }
+    .body { padding: 16px; }
+    h1 { font-size: 19px; }
+    .bar .title { display: none; }
+  }
 </style>
 </head>
 <body>
@@ -69,20 +85,24 @@ export function render(content, scheme) {
     <h1>${esc(content.identity.name)}</h1>
     ${content.identity.tagline ? `<div class="tagline">${esc(content.identity.tagline)}</div>` : ""}
 
-    ${content.about ? `<h2 id="about">about</h2><p>${esc(content.about)}</p>` : ""}
+    ${content.about ? `<h2 id="about">${esc(title.about)}</h2><p>${esc(content.about)}</p>` : ""}
 
-    ${content.projects?.length ? `<h2 id="projects">projects</h2>
+    ${content.projects?.length ? `<h2 id="projects">${esc(title.projects)}</h2>
       ${content.projects.map((p) => `
       <div class="project">
-        <h3>${p.url ? `<a href="${esc(p.url)}">${esc(p.title)}</a>` : esc(p.title)}</h3>
+        <h3>${esc(p.title)}</h3>
         ${p.description ? `<p>${esc(p.description)}</p>` : ""}
-        ${p.tags?.length ? `<div class="tags">${p.tags.map((t) => `<span class="tag">${esc(t)}</span>`).join(" ")}</div>` : ""}
+        <div class="project-links">
+          ${p.repo_url ? `<a href="${esc(p.repo_url)}">code</a>` : ""}
+          ${p.live_url ? `<a href="${esc(p.live_url)}">live</a>` : ""}
+        </div>
+        ${p.tags?.length ? `<div class="tags">${p.tags.map((tag) => `<span class="tag">${esc(tag)}</span>`).join(" ")}</div>` : ""}
       </div>`).join("")}` : ""}
 
-    ${content.stack?.length ? `<h2 id="stack">stack</h2>
+    ${content.stack?.length ? `<h2 id="stack">${esc(title.stack)}</h2>
       <div class="stack">${content.stack.map((s) => `<span>${esc(s.name)}</span>`).join("")}</div>` : ""}
 
-    ${content.experience?.length ? `<h2 id="experience">experience</h2>
+    ${content.experience?.length ? `<h2 id="experience">${esc(title.experience)}</h2>
       ${content.experience.map((e) => `
       <div class="exp">
         <h3>${esc(e.role)}${e.organisation ? ` @ ${esc(e.organisation)}` : ""}</h3>
@@ -90,7 +110,7 @@ export function render(content, scheme) {
         ${e.description ? `<p>${esc(e.description)}</p>` : ""}
       </div>`).join("")}` : ""}
 
-    ${content.socials?.length ? `<h2 id="contact">contact</h2>
+    ${content.socials?.length ? `<h2 id="contact">${esc(title.contact)}</h2>
       <div class="socials">${content.socials.map((s) => `<a href="${esc(s.url)}">${esc(s.platform)}</a>`).join("")}</div>` : ""}
 
     ${content.footer ? `<footer>${esc(content.footer)}</footer>` : ""}

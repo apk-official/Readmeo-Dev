@@ -8,6 +8,7 @@
 // That subdomain is the KV key holding the artifact JSON.
 
 import { renderPortfolio } from "./render.js";
+import { renderCard } from "./render-card.js";
 
 export default {
   async fetch(request, env) {
@@ -59,14 +60,4 @@ function getSubdomain(request, url) {
     return parts[0];
   }
   return null;
-}
-
-// Placeholder SVG card — replaced when we build the real card renderer.
-function renderCard(section, artifact) {
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="400" height="100">
-    <text x="20" y="50" font-size="20">${section}: ${artifact.content.identity.name}</text>
-  </svg>`;
-  return new Response(svg, {
-    headers: { "content-type": "image/svg+xml" },
-  });
 }

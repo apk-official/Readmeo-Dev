@@ -8,6 +8,7 @@ from datetime import UTC, datetime
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.responses import PlainTextResponse
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -23,7 +24,7 @@ from app.schema.portfolio import (
     SubdomainUpdate,
     TemplateUpdate,
 )
-from app.services import kv_service, portfolio_service
+from app.services import kv_service, portfolio_service, readme_service
 
 router = APIRouter(prefix="/portfolios", tags=["portfolios"])
 
@@ -154,7 +155,12 @@ async def change_subdomain(
 
     if portfolio.is_published:
         try:
-            await kv_service.put_artifact(payload.subdomain, portfolio.artifact)
+            await kv_service.put_artifact(
+                payload.subdomain,
+                portfolio.artifact,
+                template_id=portfolio.template_id,
+                scheme_id=portfolio.scheme_id,
+            )
             await kv_service.delete_artifact(old_subdomain)
         except Exception as e:
             portfolio.last_deploy_error = str(e)
@@ -185,6 +191,7 @@ async def delete_portfolio(
     await db.delete(portfolio)
     await db.commit()
 
+
 @router.patch("/me/template", response_model=StyleUpdateResult)
 async def change_template(
     payload: TemplateUpdate,
@@ -194,7 +201,8 @@ async def change_template(
     """Change the template. Re-pushes to KV if the portfolio is live."""
     portfolio = await portfolio_service.get_portfolio_by_user(db, user.id)
     if portfolio is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No portfolio yet")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="No portfolio yet")
 
     portfolio.template_id = payload.template_id
 
@@ -218,6 +226,7 @@ async def change_template(
         last_deploy_error=portfolio.last_deploy_error,
     )
 
+
 @router.patch("/me/scheme", response_model=StyleUpdateResult)
 async def change_scheme(
     payload: SchemeUpdate,
@@ -227,7 +236,8 @@ async def change_scheme(
     """Change the color/font scheme. Re-pushes to KV if the portfolio is live."""
     portfolio = await portfolio_service.get_portfolio_by_user(db, user.id)
     if portfolio is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No portfolio yet")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="No portfolio yet")
 
     portfolio.scheme_id = payload.scheme_id
 
@@ -250,3 +260,18 @@ async def change_scheme(
         is_published=portfolio.is_published,
         last_deploy_error=portfolio.last_deploy_error,
     )
+
+
+@router.get("/me/readme", response_class=PlainTextResponse)
+async def get_readme_markdown(
+    user: CurrentUser,
+    db: Annotated[AsyncSession, Depends(get_db)],
+):
+    """Return the ready-to-paste README markdown for the user's profile."""
+    portfolio = await portfolio_service.get_portfolio_by_user(db, user.id)
+    if portfolio is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="No portfolio yet"
+        )
+
+    return readme_service.generate_readme(portfolio, user.github_username)
