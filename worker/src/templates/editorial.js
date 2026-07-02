@@ -17,12 +17,10 @@ export function render(content, scheme) {
 
   const fonts = "https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap";
 
-  // Nav links only for sections that have content.
+  // Nav links: only About, Projects, Contact (for sections that exist).
   const navItems = [];
   if (content.about) navItems.push([title.about, "#about"]);
   if (content.projects?.length) navItems.push([title.projects, "#projects"]);
-  if (content.stack?.length) navItems.push([title.stack, "#stack"]);
-  if (content.experience?.length) navItems.push([title.experience, "#experience"]);
   if (content.socials?.length || content.contacts?.length) navItems.push([title.contact, "#contact"]);
   const navLinks = navItems.map(([label, href]) => `<a href="${href}">${esc(label)}</a>`).join("");
 
