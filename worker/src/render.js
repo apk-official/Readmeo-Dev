@@ -6,11 +6,13 @@
 
 import { render as minimal } from "./templates/minimal.js";
 import { render as terminal } from "./templates/terminal.js";
+import { render as editorial } from "./templates/editorial.js";
 import { schemes, DEFAULT_SCHEME } from "./schemes/index.js";
 
 const templates = {
   minimal,
   terminal,
+  editorial,
 };
 
 const DEFAULT_TEMPLATE = "minimal";

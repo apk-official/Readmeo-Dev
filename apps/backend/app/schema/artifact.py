@@ -8,7 +8,7 @@ never how it looks.
 
 from typing import Literal
 
-from pydantic import BaseModel, Field, HttpUrl
+from pydantic import BaseModel, Field, HttpUrl, model_validator
 
 
 class Identity(BaseModel):
@@ -45,6 +45,33 @@ class Social(BaseModel):
     url: HttpUrl
 
 
+class Contact(BaseModel):
+    # An explicit contact method the user chooses to surface: email, phone,
+    # or any link. `kind` decides how `value` is validated and formatted:
+    #   email -> mailto:addr   phone -> tel:number   link -> https URL
+    label: str
+    value: str
+    kind: Literal["email", "phone", "link"] = "link"
+
+    @model_validator(mode="after")
+    def normalize_value(self):
+        v = self.value.strip()
+        if self.kind == "email":
+            addr = v.removeprefix("mailto:")
+            if "@" not in addr or "." not in addr.split("@")[-1]:
+                raise ValueError("invalid email address")
+            self.value = f"mailto:{addr}"
+        elif self.kind == "phone":
+            self.value = v if v.startswith("tel:") else f"tel:{v}"
+        else:
+            if not v.startswith(("http://", "https://", "mailto:", "tel:")):
+                v = f"https://{v}"
+            if not v.startswith(("http://", "https://")):
+                raise ValueError("links must be http(s)")
+            self.value = v
+        return self
+
+
 class SectionTitles(BaseModel):
     # Display labels for the fixed V1 sections. Users can rename them
     # ("About" -> "Who am I") without changing the structure.
@@ -62,6 +89,7 @@ class Content(BaseModel):
     stack: list[StackItem] = Field(default_factory=list)
     experience: list[ExperienceItem] = Field(default_factory=list)
     socials: list[Social] = Field(default_factory=list)
+    contacts: list[Contact] = Field(default_factory=list)
     footer: str = ""
     section_titles: SectionTitles = Field(default_factory=SectionTitles)
 
