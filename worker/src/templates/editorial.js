@@ -2,10 +2,11 @@
 // Minimal Modern design. Carries its own light + dark palette as CSS variables;
 // the scheme controls only --accent. A nav toggle flips light/dark.
 
-import { esc } from "./_helpers.js";
+import { esc, faviconHref, metaTags } from "./_helpers.js";
 
-export function render(content, scheme) {
+export function render(content, scheme, meta = {}) {
   const accent = scheme.colors.accent;
+  const url = meta.url || "";
   const t = content.section_titles || {};
   const title = {
     about: t.about || "About",
@@ -61,6 +62,8 @@ export function render(content, scheme) {
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${esc(content.identity.name)}</title>
+<link rel="icon" href="${faviconHref(content, accent)}">
+${metaTags(content, url)}
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="${fonts}" rel="stylesheet">
 <style>
@@ -167,6 +170,49 @@ ${content.socials?.length ? `<footer class="sec">
     setTheme(saved);
   })();
 </script>
+</body>
+</html>`;
+}
+
+// Styled 404 (Minimal Modern "Lost in the void") for bad paths.
+export function notFound(scheme) {
+  const accent = scheme.colors.accent;
+  return `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>404 — Not found</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root { --bg:#FAFAF8; --fg:#111110; --muted:#6B6B68; --border:#E4E4E0; --accent:${accent}; }
+  * { box-sizing:border-box; }
+  body { margin:0; min-height:100vh; background:var(--bg); color:var(--fg); font-family:'DM Sans',sans-serif; display:flex; flex-direction:column; }
+  @keyframes fadeUp { from { opacity:0; transform:translateY(18px); } to { opacity:1; transform:translateY(0); } }
+  nav { border-bottom:1px solid var(--border); padding:0 clamp(24px,6vw,72px); display:flex; align-items:center; height:56px; }
+  nav .logo { font-family:'DM Serif Display',serif; font-size:20px; letter-spacing:-0.5px; }
+  main { flex:1; display:flex; align-items:center; padding:clamp(60px,12vw,120px) clamp(24px,6vw,72px); max-width:860px; margin:0 auto; width:100%; animation:fadeUp .5s ease-out both; }
+  .label { display:flex; align-items:center; gap:8px; margin-bottom:28px; }
+  .dot { width:7px; height:7px; border-radius:50%; background:#EF4444; }
+  .label span { font-size:13px; color:var(--muted); }
+  h1 { font-family:'DM Serif Display',serif; font-size:clamp(60px,12vw,110px); line-height:1; letter-spacing:-4px; margin:0 0 28px; font-weight:400; }
+  h1 em { font-style:italic; }
+  p { font-size:17px; color:var(--muted); margin:0 0 40px; font-weight:300; max-width:460px; line-height:1.7; }
+  a.home { display:flex; justify-content:space-between; align-items:center; max-width:400px; padding:16px 0; border-top:1px solid var(--border); border-bottom:1px solid var(--border); color:var(--fg); text-decoration:none; font-size:14px; font-weight:500; transition:color .15s; }
+  a.home:hover { color:var(--accent); }
+</style>
+</head>
+<body>
+<nav><span class="logo">404</span></nav>
+<main>
+  <div style="width:100%;">
+    <div class="label"><span class="dot"></span><span>Error 404 — Page not found</span></div>
+    <h1>Lost<em> in</em><br>the void.</h1>
+    <p>The page you're looking for doesn't exist or has been moved. Head back home or browse the work.</p>
+    <a class="home" href="/"><span>Go home</span><span style="font-size:16px;">\u2192</span></a>
+  </div>
+</main>
 </body>
 </html>`;
 }

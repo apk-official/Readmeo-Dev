@@ -3,11 +3,12 @@
 // Routing:
 //   /readme/<section>  -> SVG card for that section
 //   /                  -> full HTML portfolio page
+//   anything else      -> styled per-design 404
 //
 // The user is resolved from the subdomain: abhinav.gitbunny.dev -> "abhinav".
 // That subdomain is the KV key holding the artifact JSON.
 
-import { renderPortfolio } from "./render.js";
+import { renderPortfolio, renderNotFound } from "./render.js";
 import { renderCard } from "./render-card.js";
 
 export default {
@@ -31,13 +32,23 @@ export default {
       return new Response("Corrupt portfolio data", { status: 500 });
     }
 
-    // Route: /readme/* -> SVG cards, everything else -> HTML page.
+    // /readme/* -> SVG cards.
     if (url.pathname.startsWith("/readme/")) {
       const section = url.pathname.slice("/readme/".length);
       return renderCard(section, artifact);
     }
 
-    return new Response(renderPortfolio(artifact), {
+    // Home page -> the portfolio. Pass the canonical url for SEO/OG tags.
+    if (url.pathname === "/" || url.pathname === "") {
+      return new Response(
+        renderPortfolio(artifact, { url: `https://${subdomain}.gitbunny.dev` }),
+        { headers: { "content-type": "text/html; charset=utf-8" } },
+      );
+    }
+
+    // Any other path on an existing portfolio -> styled 404 matching its design.
+    return new Response(renderNotFound(artifact), {
+      status: 404,
       headers: { "content-type": "text/html; charset=utf-8" },
     });
   },
