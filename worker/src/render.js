@@ -7,12 +7,20 @@
 import { render as minimal } from "./templates/minimal.js";
 import { render as terminal, notFound as terminalNotFound } from "./templates/terminal.js";
 import { render as editorial, notFound as editorialNotFound } from "./templates/editorial.js";
+import { render as retro, notFound as retroNotFound } from "./templates/retro.js";
+import { render as futuristic, notFound as futuristicNotFound } from "./templates/futuristic.js";
+import { render as glass, notFound as glassNotFound } from "./templates/glass.js";
+import { render as pastel, notFound as pastelNotFound } from "./templates/pastel.js";
 import { schemes, DEFAULT_SCHEME } from "./schemes/index.js";
 
 const templates = {
   minimal,
   terminal,
   editorial,
+  retro,
+  futuristic,
+  glass,
+  pastel,
 };
 
 // Per-design 404 pages. Templates that define one register it here;
@@ -20,6 +28,10 @@ const templates = {
 const notFoundPages = {
   editorial: editorialNotFound,
   terminal: terminalNotFound,
+  retro: retroNotFound,
+  futuristic: futuristicNotFound,
+  glass: glassNotFound,
+  pastel: pastelNotFound,
 };
 
 const DEFAULT_TEMPLATE = "minimal";
@@ -31,7 +43,9 @@ export function renderPortfolio(artifact, meta = {}) {
   const templateFn = templates[artifact.template_id] || templates[DEFAULT_TEMPLATE];
   const scheme = schemes[artifact.scheme_id] || schemes[DEFAULT_SCHEME];
 
-  return templateFn(content, scheme, meta);
+  // The per-template accent choice (e.g. "lime", "pink") travels in meta so
+  // each template can map it to its own allowed palette.
+  return templateFn(content, scheme, { ...meta, accent: artifact.accent });
 }
 
 // Styled 404 for a bad path on an existing portfolio, matching its template.

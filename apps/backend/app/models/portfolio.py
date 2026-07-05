@@ -32,6 +32,7 @@ class Portfolio(Base):
     scheme_id: Mapped[str] = mapped_column(
         String(64), default="dark", server_default="dark"
     )
+    accent: Mapped[str | None] = mapped_column(String(32), nullable=True)
 
     # Mirrors the artifact's own version, so we can find stale rows with a plain WHERE.
     schema_version: Mapped[int] = mapped_column(Integer, default=1)

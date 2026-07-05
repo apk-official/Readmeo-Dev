@@ -71,3 +71,6 @@ class StyleUpdateResult(BaseModel):
     scheme_id: str
     is_published: bool
     last_deploy_error: str | None
+
+class AccentUpdate(BaseModel):
+    accent: str

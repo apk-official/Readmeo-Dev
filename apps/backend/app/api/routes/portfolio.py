@@ -15,6 +15,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.api.deps import CurrentUser
 from app.db.session import get_db
 from app.schema.portfolio import (
+    AccentUpdate,
     DeployStatus,
     PortfolioCreate,
     PortfolioRead,
@@ -262,6 +263,41 @@ async def change_scheme(
         last_deploy_error=portfolio.last_deploy_error,
     )
 
+@router.patch("/me/accent", response_model=StyleUpdateResult)
+async def change_accent(
+    payload: AccentUpdate,
+    user: CurrentUser,
+    db: Annotated[AsyncSession, Depends(get_db)],
+):
+    """Change the accent color. Re-pushes to KV if the portfolio is live."""
+    portfolio = await portfolio_service.get_portfolio_by_user(db, user.id)
+    if portfolio is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="No portfolio yet")
+
+    portfolio.accent = payload.accent
+
+    if portfolio.is_published:
+        try:
+            await kv_service.put_artifact(
+                portfolio.subdomain,
+                portfolio.artifact,
+                template_id=portfolio.template_id,
+                scheme_id=portfolio.scheme_id,
+                accent=portfolio.accent,
+            )
+        except Exception as e:
+            portfolio.last_deploy_error = str(e)
+            await db.commit()
+            raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail="Accent updated but redeploy failed")  # noqa: B904, E501
+    await db.commit()
+    return StyleUpdateResult(
+        template_id=portfolio.template_id,
+        scheme_id=portfolio.scheme_id,
+        accent=portfolio.accent,
+        is_published=portfolio.is_published,
+        last_deploy_error=portfolio.last_deploy_error,
+    )
 
 @router.get("/me/readme", response_class=PlainTextResponse)
 async def get_readme_markdown(

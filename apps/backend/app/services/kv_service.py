@@ -35,9 +35,10 @@ async def put_artifact(
     *,
     template_id: str,
     scheme_id: str,
+    accent: str | None = None,
 ) -> None:
     """Write the artifact (plus template/scheme choice) to KV under the subdomain."""
-    payload = {**artifact_dict, "template_id": template_id, "scheme_id": scheme_id}
+    payload = {**artifact_dict, "template_id": template_id, "scheme_id": scheme_id,"accent": accent}
     async with httpx.AsyncClient() as client:
         res = await client.put(
             _kv_url(subdomain),
