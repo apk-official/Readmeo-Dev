@@ -166,7 +166,7 @@ ${metaTags(content, url)}
     </div>
     ${content.contacts?.length ? `<div style="display:inline-flex;align-items:center;gap:7px;background:${rgba(a2, 0.15)};border:1px solid ${rgba(a2, 0.3)};padding:5px 14px;border-radius:20px;margin-bottom:20px;">
       <div style="width:6px;height:6px;border-radius:50%;background:${a2};"></div>
-      <span style="font-size:12.5px;color:${a2};font-weight:500;">Available for new roles</span>
+      <span style="font-size:12.5px;color:${a2};font-weight:500;">Let's connect</span>
     </div>` : ""}
     <h1 style="font-family:'Playfair Display',serif;font-size:clamp(40px,8vw,72px);line-height:1.05;letter-spacing:-1.5px;margin:0 0 18px;font-weight:500;color:var(--fg);">${esc(content.identity.name)}</h1>
     ${content.identity.tagline ? `<p style="font-size:18px;color:var(--fg-muted);margin:0 0 36px;font-weight:300;max-width:480px;line-height:1.65;">${esc(content.identity.tagline)}</p>` : ""}

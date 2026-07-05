@@ -4,13 +4,14 @@
 // scheme   = colors + fonts + sizing (dark, light, gold, ...)
 // They are independent: any template works with any scheme.
 
-import { render as minimal } from "./templates/minimal.js";
+import { render as minimal, notFound as minimalNotFound } from "./templates/minimal.js";
 import { render as terminal, notFound as terminalNotFound } from "./templates/terminal.js";
 import { render as editorial, notFound as editorialNotFound } from "./templates/editorial.js";
 import { render as retro, notFound as retroNotFound } from "./templates/retro.js";
 import { render as futuristic, notFound as futuristicNotFound } from "./templates/futuristic.js";
 import { render as glass, notFound as glassNotFound } from "./templates/glass.js";
 import { render as pastel, notFound as pastelNotFound } from "./templates/pastel.js";
+import { render as geocities, notFound as geocitiesNotFound } from "./templates/geocities.js";
 import { schemes, DEFAULT_SCHEME } from "./schemes/index.js";
 
 const templates = {
@@ -21,17 +22,20 @@ const templates = {
   futuristic,
   glass,
   pastel,
+  geocities,
 };
 
 // Per-design 404 pages. Templates that define one register it here;
 // others fall back to the default template's 404.
 const notFoundPages = {
+  minimal: minimalNotFound,
   editorial: editorialNotFound,
   terminal: terminalNotFound,
   retro: retroNotFound,
   futuristic: futuristicNotFound,
   glass: glassNotFound,
   pastel: pastelNotFound,
+  geocities: geocitiesNotFound,
 };
 
 const DEFAULT_TEMPLATE = "minimal";
