@@ -5,7 +5,12 @@ import {
   SidebarGroup,
   SidebarHeader,
 } from "@/components/ui/sidebar"
-import { IconHelpHexagon, IconHome, IconSettings } from "@tabler/icons-react"
+import {
+  IconHelpHexagon,
+  IconHome,
+  IconSettings,
+  IconLogout,
+} from "@tabler/icons-react"
 import logoLight from "@/assets/LogoHorizontalLight.webp"
 import logoDark from "@/assets/LogoHorizontalDark.webp"
 import { NavLink } from "react-router"
@@ -23,9 +28,14 @@ const navItems = [
     label: "Settings",
   },
   {
-    to: "/profile",
+    to: "/support",
     icon: <IconHelpHexagon stroke={1.5} size={20} />,
     label: "Support",
+  },
+  {
+    to: "/login",
+    icon: <IconLogout stroke={1.5} size={20} />,
+    label: "Logout",
   },
 ]
 
@@ -35,17 +45,20 @@ const navLinkBase =
 export default function AppSidebar() {
   return (
     <Sidebar className="border-none text-sm **:data-[sidebar=sidebar]:bg-background">
-      <SidebarHeader className="ml-3 flex h-14.5 w-full items-start justify-center border-b dark:border-b-neutral-700">
-        <img
-          src={logoDark}
-          alt="Readmeo Logo"
-          className="hidden w-32 dark:block"
-        />
-        <img
-          src={logoLight}
-          alt="Readmeo Logo"
-          className="block w-32 dark:hidden"
-        />
+      <SidebarHeader className="flex flex-row h-14.5 w-full items-center justify-start border-b dark:border-b-neutral-700">
+        
+          <img
+            src={logoDark}
+            alt="Readmeo Logo"
+            className="hidden w-32 dark:block"
+          />
+          <img
+            src={logoLight}
+            alt="Readmeo Logo"
+            className="block w-32 dark:hidden"
+          />
+     
+        
       </SidebarHeader>
       <SidebarContent className="flex items-center p-3">
         <SidebarGroup />
@@ -75,7 +88,7 @@ export default function AppSidebar() {
         </Avatar>
         <div className="flex flex-col">
           <p>Abhinav</p>
-          <p className="text-xs text-border">Free Plan</p>
+          <p className="text-xs text-muted-foreground">Free Plan</p>
         </div>
       </SidebarFooter>
     </Sidebar>

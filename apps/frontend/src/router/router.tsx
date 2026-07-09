@@ -7,6 +7,10 @@ import ProtectedRoute from "./protected-route";
 import EditorPage from "@/features/editor-page";
 import EditorLayout from "@/layouts/editor-layout";
 import NotFoundPage from "@/features/not-found-page";
+import SettingsPage from "@/features/settings-page";
+import SupportPage from "@/features/support-page";
+// import GithubImport from "@/features/github-import";
+import PortfolioOverview from "@/features/portfolio-overview";
 
 export default function Router() {
   return (
@@ -16,7 +20,11 @@ export default function Router() {
           </Route>
           <Route element={<ProtectedRoute />}>
         <Route element={<AppLayout />}>
-          <Route path="/" element={<Dashboard />} />
+          <Route element={<Dashboard />}>
+            <Route path="/" element={<PortfolioOverview/>} />
+            <Route path="/settings" element={<SettingsPage/>} />
+            <Route path="/support" element={<SupportPage/>} />
+          </Route>
         </Route>
 
         <Route element={<EditorLayout />}>
